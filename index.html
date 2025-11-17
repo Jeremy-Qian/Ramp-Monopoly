@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopoly Game</title>
+    <style>
+        /* CSS styles to replicate the Tkinter layout and appearance */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+
+        .main-container {
+            display: flex;
+            flex-grow: 1;
+        }
+
+        .panel {
+            width: 250px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin: 5px;
+        }
+
+        #left-panel {
+            background-color: #add8e6;
+            color: #00008b;
+        }
+
+        #right-panel {
+            background-color: #f08080;
+            color: #8b0000;
+        }
+
+        .panel h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .dice-container {
+            text-align: center;
+            margin: 20px 0 10px 0;
+        }
+
+        .dice-canvas {
+            width: 120px;
+            height: 60px;
+            background-color: inherit;
+            margin: 0 auto;
+        }
+
+        .roll-btn {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px 20px;
+            margin: 20px 0;
+            width: 100%;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .roll-btn.active {
+            background-color: #008000;
+        }
+
+        .roll-btn.disabled {
+            background-color: #808080;
+            cursor: not-allowed;
+        }
+
+        .properties-section {
+            margin-top: 10px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .properties-section h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .properties-list {
+            flex-grow: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            background-color: white;
+            overflow-y: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        .center-panel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+        }
+
+        #board-container {
+            flex-grow: 1;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #board-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            background-color: #f0f0f0;
+            border: 3px solid black;
+        }
+
+        .log-frame {
+            height: 100px;
+            background-color: white;
+            border-top: 1px solid #ccc;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-frame h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            text-align: center;
+        }
+
+        #game-log {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            padding: 5px;
+            overflow-y: scroll;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        .die {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            border: 2px solid black;
+            border-radius: 3px;
+            background-color: white;
+            margin: 0 5px;
+            position: relative;
+        }
+
+        .dot {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: black;
+            border-radius: 50%;
+        }
+
+        .die-1 .dot:nth-child(1) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        .die-2 .dot:nth-child(1) { top: 20%; left: 20%; }
+        .die-2 .dot:nth-child(2) { bottom: 20%; right: 20%; }
+
+        .die-3 .dot:nth-child(1) { top: 20%; left: 20%; }
+        .die-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .die-3 .dot:nth-child(3) { bottom: 20%; right: 20%; }
+
+        .die-4 .dot:nth-child(1) { top: 20%; left: 20%; }
+        .die-4 .dot:nth-child(2) { top: 20%; right: 20%; }
+        .die-4 .dot:nth-child(3) { bottom: 20%; left: 20%; }
+        .die-4 .dot:nth-child(4) { bottom: 20%; right: 20%; }
+
+        .die-5 .dot:nth-child(1) { top: 20%; left: 20%; }
+        .die-5 .dot:nth-child(2) { top: 20%; right: 20%; }
+        .die-5 .dot:nth-child(3) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .die-5 .dot:nth-child(4) { bottom: 20%; left: 20%; }
+        .die-5 .dot:nth-child(5) { bottom: 20%; right: 20%; }
+
+        .die-6 .dot:nth-child(1) { top: 20%; left: 20%; }
+        .die-6 .dot:nth-child(2) { top: 20%; right: 20%; }
+        .die-6 .dot:nth-child(3) { top: 50%; left: 20%; transform: translateY(-50%); }
+        .die-6 .dot:nth-child(4) { top: 50%; right: 20%; transform: translateY(-50%); }
+        .die-6 .dot:nth-child(5) { bottom: 20%; left: 20%; }
+        .die-6 .dot:nth-child(6) { bottom: 20%; right: 20%; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div id="left-panel" class="panel">
+            <h2>PLAYER 1</h2>
+            <div id="p1-money-label" class="info-label">Money: R1500</div>
+            <div id="p1-position-label" class="info-label">Position: 0</div>
+
+            <div class="dice-container">
+                <div class="info-label" style="font-weight: bold;">Your Dice:</div>
+                <div id="p1-dice-display" class="dice-canvas"></div>
+            </div>
+
+            <button id="p1-roll-btn" class="roll-btn active">ROLL DICE</button>
+
+            <div class="properties-section">
+                <h3 id="p1-properties-label">Properties Owned: (0)</h3>
+                <div id="p1-properties-list" class="properties-list">None yet</div>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <div id="board-container">
+                <canvas id="board-canvas"></canvas>
+            </div>
+
+            <div class="log-frame">
+                <h3>GAME LOG</h3>
+                <div id="game-log">Game started! Player 1's turn.</div>
+            </div>
+        </div>
+
+        <div id="right-panel" class="panel">
+            <h2>PLAYER 2</h2>
+            <div id="p2-money-label" class="info-label">Money: R1500</div>
+            <div id="p2-position-label" class="info-label">Position: 0</div>
+
+            <div class="dice-container">
+                <div class="info-label" style="font-weight: bold;">Your Dice:</div>
+                <div id="p2-dice-display" class="dice-canvas"></div>
+            </div>
+
+            <button id="p2-roll-btn" class="roll-btn disabled">ROLL DICE</button>
+
+            <div class="properties-section">
+                <h3 id="p2-properties-label">Properties Owned: (0)</h3>
+                <div id="p2-properties-list" class="properties-list">None yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Property {
+            constructor(name, price, rent, color) {
+                this.name = name;
+                this.price = price;
+                this.rent = rent;
+                this.color = color;
+                this.owner = null;
+            }
+        }
+
+        class MonopolyGame {
+            constructor() {
+                this.properties = this.createProperties();
+                this.chanceCards = this.createChanceCards();
+                this.communityChestCards = this.createCommunityChestCards();
+                this.players = {
+                    'player1': { position: 0, money: 1500, color: 'blue', name: 'Player 1', inJail: false, jailTurns: 0 },
+                    'player2': { position: 0, money: 1500, color: 'red', name: 'Player 2', inJail: false, jailTurns: 0 }
+                };
+                this.currentPlayer = 'player1';
+                this.diceValues = [0, 0];
+                this.gameOver = false;
+                this.doublesRolled = false;
+
+                this.canvas = document.getElementById('board-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.logText = document.getElementById('game-log');
+
+                this.p1MoneyLabel = document.getElementById('p1-money-label');
+                this.p1PositionLabel = document.getElementById('p1-position-label');
+                this.p1DiceDisplay = document.getElementById('p1-dice-display');
+                this.p1RollBtn = document.getElementById('p1-roll-btn');
+                this.p1PropertiesLabel = document.getElementById('p1-properties-label');
+                this.p1PropertiesList = document.getElementById('p1-properties-list');
+
+                this.p2MoneyLabel = document.getElementById('p2-money-label');
+                this.p2PositionLabel = document.getElementById('p2-position-label');
+                this.p2DiceDisplay = document.getElementById('p2-dice-display');
+                this.p2RollBtn = document.getElementById('p2-roll-btn');
+                this.p2PropertiesLabel = document.getElementById('p2-properties-label');
+                this.p2PropertiesList = document.getElementById('p2-properties-list');
+
+                this.p1RollBtn.addEventListener('click', () => this.rollDice('player1'));
+                this.p2RollBtn.addEventListener('click', () => this.rollDice('player2'));
+                window.addEventListener('resize', () => this.onResize());
+
+                this.onResize();
+                this.updateInfo();
+                this.drawDice(this.p1DiceDisplay, 0, 0);
+                this.drawDice(this.p2DiceDisplay, 0, 0);
+            }
+
+            createProperties() {
+                const spaces = [];
+                spaces.push(new Property("GO", 0, 0, "white"));
+                spaces.push(new Property("Mediterranean Ave", 60, 2, "brown"));
+                spaces.push(new Property("Community Chest", 0, 0, "white"));
+                spaces.push(new Property("Baltic Ave", 60, 4, "brown"));
+                spaces.push(new Property("Income Tax", 200, 0, "white"));
+                spaces.push(new Property("Reading Railroad", 200, 25, "black"));
+                spaces.push(new Property("Oriental Ave", 100, 6, "lightblue"));
+                spaces.push(new Property("Chance", 0, 0, "white"));
+                spaces.push(new Property("Vermont Ave", 100, 6, "lightblue"));
+                spaces.push(new Property("Connecticut Ave", 120, 8, "lightblue"));
+                spaces.push(new Property("Jail/Just Visiting", 0, 0, "white"));
+                spaces.push(new Property("St. Charles Place", 140, 10, "purple"));
+                spaces.push(new Property("Electric Company", 150, 0, "white"));
+                spaces.push(new Property("States Ave", 140, 10, "purple"));
+                spaces.push(new Property("Virginia Ave", 160, 12, "purple"));
+                spaces.push(new Property("Pennsylvania Railroad", 200, 25, "black"));
+                spaces.push(new Property("St. James Place", 180, 14, "orange"));
+                spaces.push(new Property("Community Chest", 0, 0, "white"));
+                spaces.push(new Property("Tennessee Ave", 180, 14, "orange"));
+                spaces.push(new Property("New York Ave", 200, 16, "orange"));
+                spaces.push(new Property("Free Parking", 0, 0, "white"));
+                spaces.push(new Property("Kentucky Ave", 220, 18, "red"));
+                spaces.push(new Property("Chance", 0, 0, "white"));
+                spaces.push(new Property("Indiana Ave", 220, 18, "red"));
+                spaces.push(new Property("Illinois Ave", 240, 20, "red"));
+                spaces.push(new Property("B&O Railroad", 200, 25, "black"));
+                spaces.push(new Property("Atlantic Ave", 260, 22, "yellow"));
+                spaces.push(new Property("Ventnor Ave", 260, 22, "yellow"));
+                spaces.push(new Property("Water Works", 150, 0, "white"));
+                spaces.push(new Property("Marvin Gardens", 280, 24, "yellow"));
+                spaces.push(new Property("Go To Jail", 0, 0, "white"));
+                spaces.push(new Property("Pacific Ave", 300, 26, "green"));
+                spaces.push(new Property("North Carolina Ave", 300, 26, "green"));
+                spaces.push(new Property("Community Chest", 0, 0, "white"));
+                spaces.push(new Property("Pennsylvania Ave", 320, 28, "green"));
+                spaces.push(new Property("Short Line Railroad", 200, 25, "black"));
+                spaces.push(new Property("Chance", 0, 0, "white"));
+                spaces.push(new Property("Park Place", 350, 35, "darkblue"));
+                spaces.push(new Property("Luxury Tax", 100, 0, "white"));
+                spaces.push(new Property("Boardwalk", 400, 50, "darkblue"));
+                return spaces;
+            }
+
+            createChanceCards() {
+                return [
+                    { message: "Somebody shot you with a gel blaster! Collect R200 for medical expenses.", addMoney: 200, minusMoney: 0 },
+                    { message: "Doctor's fees! Pay R50.", addMoney: 0, minusMoney: 50 },
+                    { message: "Go directly to jail and face your torture!", addMoney: 0, minusMoney: 0, goToJail: true },
+                    { message: "It's your birthday! Collect R100.", addMoney: 100, minusMoney: 0 },
+                    { message: "Bandits attack you! Pay R50.", addMoney: 0, minusMoney: 50 },
+                    { message: "You inherit R100!", addMoney: 100, minusMoney: 0 },
+                    { message: "You helped catch a Ramp criminal! Collect R25.", addMoney: 25, minusMoney: 0 },
+                    { message: "Pay hospital fees of R100", addMoney: 0, minusMoney: 100 },
+                    { message: "Pay R50 for your Ramp shirt.", addMoney: 0, minusMoney: 50 },
+                    { message: "Someone pays you R25 for spitting water on your shirt four times.", addMoney: 25, minusMoney: 0 },
+                    { message: "The Ramp Supreme Court has sentenced you to pay R40.", addMoney: 0, minusMoney: 40 },
+                    { message: "You won Pass the Pumpkin in the Fall Festival! Collect R10.", addMoney: 10, minusMoney: 0 },
+                ];
+            }
+
+            createCommunityChestCards() {
+                return [
+                    { message: "Bandits steal R500 from you.", addMoney: 0, minusMoney: 500 },
+                    { message: "You won first place in the 5K 10K! Collect R300", addMoney: 300, minusMoney: 0 },
+                    { message: "You inherit R1000 from a stork man!", addMoney: 1000, minusMoney: 0 },
+                    { message: "Pay R300 to recover your Google Chat.", addMoney: 0, minusMoney: 300 },
+                    { message: "Pay R250 for spamming!", addMoney: 0, minusMoney: 250 },
+                    { message: "Acquire The Rampage! Pay R600 to acquire.", addMoney: 0, minusMoney: 600 },
+                    { message: "Google Chat error in your favor! Collect R500", addMoney: 500, minusMoney: 0 },
+                ];
+            }
+
+            drawSingleDie(container, value) {
+                container.innerHTML = '';
+                if (value === 0) return;
+
+                const dieDiv = document.createElement('div');
+                dieDiv.className = `die die-${value}`;
+
+                for (let i = 0; i < value; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dieDiv.appendChild(dot);
+                }
+                container.appendChild(dieDiv);
+            }
+
+            drawDice(container, die1, die2) {
+                container.innerHTML = '';
+                const die1Div = document.createElement('div');
+                die1Div.style.display = 'inline-block';
+                const die2Div = document.createElement('div');
+                die2Div.style.display = 'inline-block';
+
+                this.drawSingleDie(die1Div, die1);
+                this.drawSingleDie(die2Div, die2);
+
+                container.appendChild(die1Div);
+                container.appendChild(die2Div);
+            }
+
+            onResize() {
+                const container = document.getElementById('board-container');
+                const size = Math.min(container.clientWidth, container.clientHeight - 5);
+                
+                const dpr = window.devicePixelRatio || 1;
+                
+                this.canvas.style.width = size + 'px';
+                this.canvas.style.height = size + 'px';
+                
+                this.canvas.width = size * dpr;
+                this.canvas.height = size * dpr;
+                
+                this.ctx.scale(dpr, dpr);
+
+                this.drawBoard();
+            }
+
+            drawBoard() {
+                const width = this.canvas.style.width ? parseInt(this.canvas.style.width) : this.canvas.width;
+                const height = this.canvas.style.height ? parseInt(this.canvas.style.height) : this.canvas.height;
+                const dpr = window.devicePixelRatio || 1;
+                this.ctx.clearRect(0, 0, width * dpr, height * dpr);
+
+                if (width <= 1 || height <= 1) return;
+
+                const boardSize = Math.min(width, height);
+                const offset_x = (width - boardSize) / 2;
+                const offset_y = (height - boardSize) / 2;
+                const spaceWidth = boardSize / 11;
+
+                this.ctx.fillStyle = '#f5f5dc';
+                this.ctx.strokeStyle = 'black';
+                this.ctx.lineWidth = 3;
+                this.ctx.fillRect(offset_x, offset_y, boardSize, boardSize);
+                this.ctx.strokeRect(offset_x, offset_y, boardSize, boardSize);
+
+                const centerMargin = spaceWidth;
+                this.ctx.fillStyle = 'lightgreen';
+                this.ctx.strokeStyle = 'black';
+                this.ctx.lineWidth = 2;
+                this.ctx.fillRect(offset_x + centerMargin, offset_y + centerMargin,
+                                  boardSize - 2 * centerMargin, boardSize - 2 * centerMargin);
+                this.ctx.strokeRect(offset_x + centerMargin, offset_y + centerMargin,
+                                    boardSize - 2 * centerMargin, boardSize - 2 * centerMargin);
+
+                this.ctx.fillStyle = 'black';
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText("MONOPOLY", offset_x + boardSize / 2, offset_y + boardSize / 2);
+
+                this.spacePositions = [];
+
+                const drawSpace = (x, y, w, h, index) => {
+                    const prop = this.properties[index];
+                    const colorMap = {
+                        "brown": "#a52a2a", "lightblue": "#add8e6", "purple": "#800080",
+                        "orange": "#ffa500", "red": "#ff0000", "yellow": "#ffff00",
+                        "green": "#008000", "darkblue": "#00008b", "black": "#000000",
+                        "white": "#ffffff"
+                    };
+                    const bgColor = colorMap[prop.color] || 'white';
+                    const textColor = ['brown', 'purple', 'orange', 'red', 'green', 'darkblue', 'black'].includes(prop.color) ? 'white' : 'black';
+
+                    this.ctx.fillStyle = bgColor;
+                    this.ctx.strokeStyle = 'black';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.fillRect(x, y, w, h);
+                    this.ctx.strokeRect(x, y, w, h);
+
+                    this.ctx.fillStyle = textColor;
+                    this.ctx.font = '7px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    
+                    const fullName = prop.name;
+                    const words = fullName.split(' ');
+                    
+                    if (fullName.length > 12 && words.length > 1) {
+                        const mid = Math.ceil(words.length / 2);
+                        const line1 = words.slice(0, mid).join(' ');
+                        const line2 = words.slice(mid).join(' ');
+                        this.ctx.fillText(line1, x + w / 2, y + h / 2 - 4, w - 4);
+                        this.ctx.fillText(line2, x + w / 2, y + h / 2 + 4, w - 4);
+                    } else {
+                        this.ctx.fillText(fullName, x + w / 2, y + h / 2, w - 4);
+                    }
+
+                    if (prop.owner) {
+                        const ownerColor = this.players[prop.owner].color;
+                        this.ctx.fillStyle = ownerColor;
+                        this.ctx.beginPath();
+                        this.ctx.arc(x + 10, y + 10, 5, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = 'black';
+                        this.ctx.stroke();
+                    }
+                };
+
+                for (let i = 0; i < 11; i++) {
+                    const x = offset_x + boardSize - (i + 1) * spaceWidth;
+                    const y = offset_y + boardSize - spaceWidth;
+                    drawSpace(x, y, spaceWidth, spaceWidth, i);
+                    this.spacePositions.push({ x: x + spaceWidth / 2, y: y + spaceWidth / 2 });
+                }
+
+                for (let i = 0; i < 9; i++) {
+                    const x = offset_x;
+                    const y = offset_y + boardSize - (i + 2) * spaceWidth;
+                    drawSpace(x, y, spaceWidth, spaceWidth, 11 + i);
+                    this.spacePositions.push({ x: x + spaceWidth / 2, y: y + spaceWidth / 2 });
+                }
+
+                for (let i = 0; i < 11; i++) {
+                    const x = offset_x + i * spaceWidth;
+                    const y = offset_y;
+                    drawSpace(x, y, spaceWidth, spaceWidth, 20 + i);
+                    this.spacePositions.push({ x: x + spaceWidth / 2, y: y + spaceWidth / 2 });
+                }
+
+                for (let i = 0; i < 9; i++) {
+                    const x = offset_x + boardSize - spaceWidth;
+                    const y = offset_y + (i + 1) * spaceWidth;
+                    drawSpace(x, y, spaceWidth, spaceWidth, 31 + i);
+                    this.spacePositions.push({ x: x + spaceWidth / 2, y: y + spaceWidth / 2 });
+                }
+
+                this.drawPlayers();
+            }
+
+            drawPlayers() {
+                for (const playerName in this.players) {
+                    const player = this.players[playerName];
+                    const pos = player.position;
+
+                    if (pos < this.spacePositions.length) {
+                        const { x, y } = this.spacePositions[pos];
+
+                        const offset = playerName === 'player1' ? 15 : -15;
+
+                        this.ctx.fillStyle = player.color;
+                        this.ctx.strokeStyle = 'black';
+                        this.ctx.lineWidth = 2;
+
+                        this.ctx.beginPath();
+                        this.ctx.arc(x + offset, y, 10, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                        this.ctx.stroke();
+
+                        const num = playerName === 'player1' ? '1' : '2';
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.font = 'bold 10px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(num, x + offset, y);
+                    }
+                }
+            }
+
+            logMessage(message) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                this.logText.innerHTML += `[${timeString}] ${message}\n`;
+                this.logText.scrollTop = this.logText.scrollHeight;
+            }
+
+            updatePropertiesList() {
+                const playersData = [
+                    { name: 'player1', list: this.p1PropertiesList, label: this.p1PropertiesLabel },
+                    { name: 'player2', list: this.p2PropertiesList, label: this.p2PropertiesLabel }
+                ];
+
+                for (const data of playersData) {
+                    const owned = this.properties.filter(p => p.owner === data.name);
+
+                    data.label.textContent = `Properties Owned: (${owned.length})`;
+                    data.list.textContent = '';
+
+                    if (owned.length > 0) {
+                        data.list.textContent = owned.map(prop => `• ${prop.name}\n  (R${prop.rent} rent)`).join('\n');
+                    } else {
+                        data.list.textContent = "None yet";
+                    }
+                }
+            }
+
+            updateInfo() {
+                const p1 = this.players['player1'];
+                const p2 = this.players['player2'];
+
+                const p1Status = p1.inJail ? " (IN JAIL)" : "";
+                const p2Status = p2.inJail ? " (IN JAIL)" : "";
+
+                this.p1MoneyLabel.textContent = `Money: R${p1.money}`;
+                this.p1PositionLabel.textContent = `Position: ${p1.position}${p1Status}`;
+
+                this.p2MoneyLabel.textContent = `Money: R${p2.money}`;
+                this.p2PositionLabel.textContent = `Position: ${p2.position}${p2Status}`;
+
+                this.updatePropertiesList();
+
+                this.p1RollBtn.classList.remove('active', 'disabled');
+                this.p2RollBtn.classList.remove('active', 'disabled');
+
+                if (this.gameOver) {
+                    this.p1RollBtn.classList.add('disabled');
+                    this.p2RollBtn.classList.add('disabled');
+                } else if (this.currentPlayer === 'player1') {
+                    this.p1RollBtn.classList.add('active');
+                    this.p2RollBtn.classList.add('disabled');
+                } else {
+                    this.p1RollBtn.classList.add('disabled');
+                    this.p2RollBtn.classList.add('active');
+                }
+            }
+
+            async rollDice(playerName) {
+                if (this.gameOver || this.currentPlayer !== playerName) {
+                    return;
+                }
+
+                const player = this.players[playerName];
+                const playerNum = playerName === 'player1' ? "Player 1" : "Player 2";
+                const diceDisplay = playerName === 'player1' ? this.p1DiceDisplay : this.p2DiceDisplay;
+
+                this.p1RollBtn.classList.add('disabled');
+                this.p2RollBtn.classList.add('disabled');
+
+                const die1 = Math.floor(Math.random() * 6) + 1;
+                const die2 = Math.floor(Math.random() * 6) + 1;
+                const total = die1 + die2;
+
+                this.drawDice(diceDisplay, die1, die2);
+
+                if (player.inJail) {
+                    player.jailTurns += 1;
+                    this.logMessage(`${playerNum} rolled ${die1} and ${die2} (in jail, attempt ${player.jailTurns}/3)`);
+
+                    if (die1 === die2) {
+                        player.inJail = false;
+                        player.jailTurns = 0;
+                        this.logMessage(`${playerNum} rolled doubles and got out of jail!`);
+                        alert(`Out of Jail! ${playerNum} rolled doubles and got out of jail!`);
+                        this.doublesRolled = true;
+                        this.movePlayer(playerName, total);
+                        this.updateInfo();
+                    } else if (player.jailTurns >= 3) {
+                        player.money -= 50;
+                        player.inJail = false;
+                        player.jailTurns = 0;
+                        this.logMessage(`${playerNum} paid R50 to get out of jail`);
+                        alert(`Out of Jail! ${playerNum} paid R50 to get out of jail!`);
+                        this.updateInfo();
+                        this.checkBankruptcy(playerName);
+                        this.switchTurn();
+                    } else {
+                        this.logMessage(`${playerNum} failed to roll doubles, still in jail`);
+                        alert(`Still in Jail! ${playerNum} failed to roll doubles! Still in jail (attempt ${player.jailTurns}/3)`);
+                        this.switchTurn();
+                    }
+                    return;
+                }
+
+                this.logMessage(`${playerNum} rolled ${die1} and ${die2} (total: ${total})`);
+
+                if (die1 === die2) {
+                    this.doublesRolled = true;
+                    this.logMessage(`${playerNum} rolled DOUBLES! Roll again!`);
+                    alert(`Doubles! ${playerNum} rolled DOUBLES! Roll again!`);
+                } else {
+                    this.doublesRolled = false;
+                }
+
+                await this.movePlayer(playerName, total);
+
+                if (!this.doublesRolled) {
+                    this.switchTurn();
+                } else {
+                    this.updateInfo();
+                }
+            }
+
+            switchTurn() {
+                this.currentPlayer = this.currentPlayer === 'player1' ? 'player2' : 'player1';
+                const nextPlayer = this.currentPlayer === 'player2' ? "Player 2" : "Player 1";
+                this.logMessage(`--- ${nextPlayer}'s turn ---`);
+                this.updateInfo();
+            }
+
+            async movePlayer(playerName, steps) {
+                const player = this.players[playerName];
+                const oldPos = player.position;
+                let newPos = (oldPos + steps);
+                const playerNum = playerName === 'player1' ? "Player 1" : "Player 2";
+
+                for (let i = 1; i <= steps; i++) {
+                    player.position = (oldPos + i) % 40;
+                    this.drawBoard();
+                    this.updateInfo();
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                newPos = player.position;
+
+                if (newPos < oldPos) {
+                    player.money += 200;
+                    this.logMessage(`${playerNum} passed GO! Collected R200`);
+                    alert(`${playerNum} passed GO! Collected R200!`);
+                }
+
+                const prop = this.properties[newPos];
+                this.logMessage(`${playerNum} landed on ${prop.name}`);
+
+                this.drawBoard();
+                this.updateInfo();
+
+                await this.handleSpace(playerName, newPos);
+            }
+
+            async handleChanceCard(playerName) {
+                const player = this.players[playerName];
+                const playerNum = playerName === 'player1' ? "Player 1" : "Player 2";
+
+                const card = this.chanceCards[Math.floor(Math.random() * this.chanceCards.length)];
+
+                this.logMessage(`🎲 CHANCE CARD: ${card.message}`);
+                alert(`Chance Card: ${card.message}`);
+
+                if (card.addMoney > 0) {
+                    player.money += card.addMoney;
+                    this.logMessage(`${playerNum} received R${card.addMoney}`);
+                    alert(`Money Received! ${playerNum} received R${card.addMoney} from Chance card!`);
+                }
+
+                if (card.minusMoney > 0) {
+                    player.money -= card.minusMoney;
+                    this.logMessage(`${playerNum} paid R${card.minusMoney}`);
+                    alert(`Payment Required! ${playerNum} paid R${card.minusMoney} from Chance card!`);
+                }
+
+                if (card.goToJail) {
+                    player.position = 10;
+                    player.inJail = true;
+                    player.jailTurns = 0;
+                    this.logMessage(`${playerNum} went to Jail!`);
+                    alert(`Go to Jail! ${playerNum} went to Jail from Chance card!`);
+                    this.drawBoard();
+                }
+
+                this.updateInfo();
+                this.checkBankruptcy(playerName);
+            }
+
+            async handleCommunityChestCard(playerName) {
+                const player = this.players[playerName];
+                const playerNum = playerName === 'player1' ? "Player 1" : "Player 2";
+
+                const card = this.communityChestCards[Math.floor(Math.random() * this.communityChestCards.length)];
+
+                this.logMessage(`📦 COMMUNITY CHEST: ${card.message}`);
+                alert(`Community Chest: ${card.message}`);
+
+                if (card.addMoney > 0) {
+                    player.money += card.addMoney;
+                    this.logMessage(`${playerNum} received R${card.addMoney}`);
+                    alert(`Money Received! ${playerNum} received R${card.addMoney} from Community Chest!`);
+                }
+
+                if (card.minusMoney > 0) {
+                    player.money -= card.minusMoney;
+                    this.logMessage(`${playerNum} paid R${card.minusMoney}`);
+                    alert(`Payment Required! ${playerNum} paid R${card.minusMoney} from Community Chest!`);
+                }
+
+                this.updateInfo();
+                this.checkBankruptcy(playerName);
+            }
+
+            async handleSpace(playerName, position) {
+                if (this.gameOver) return;
+
+                const prop = this.properties[position];
+                const player = this.players[playerName];
+                const playerNum = playerName === 'player1' ? "Player 1" : "Player 2";
+
+                if (prop.name === "Income Tax") {
+                    player.money -= 200;
+                    this.logMessage(`${playerNum} paid R200 Income Tax`);
+                    alert(`Tax Payment! ${playerNum} paid R200 Income Tax!`);
+                    this.updateInfo();
+                    this.checkBankruptcy(playerName);
+                    return;
+                }
+
+                if (prop.name === "Luxury Tax") {
+                    player.money -= 100;
+                    this.logMessage(`${playerNum} paid R100 Luxury Tax`);
+                    alert(`Tax Payment! ${playerNum} paid R100 Luxury Tax!`);
+                    this.updateInfo();
+                    this.checkBankruptcy(playerName);
+                    return;
+                }
+
+                if (prop.name === "Go To Jail") {
+                    player.position = 10;
+                    player.inJail = true;
+                    player.jailTurns = 0;
+                    this.logMessage(`${playerNum} went to Jail!`);
+                    alert(`Go to Jail! ${playerNum} landed on Go To Jail space!`);
+                    this.drawBoard();
+                    this.updateInfo();
+                    return;
+                }
+
+                if (prop.price === 0) {
+                    if (prop.name === "Chance") {
+                        await this.handleChanceCard(playerName);
+                    } else if (prop.name === "Community Chest") {
+                        await this.handleCommunityChestCard(playerName);
+                    }
+                    return;
+                }
+
+                if (prop.owner && prop.owner !== playerName) {
+                    const rent = prop.rent;
+                    player.money -= rent;
+                    this.players[prop.owner].money += rent;
+                    const opponentNum = prop.owner === 'player1' ? "Player 1" : "Player 2";
+                    this.logMessage(`${playerNum} paid R${rent} rent to ${opponentNum}`);
+                    alert(`Rent Paid! ${playerNum} paid R${rent} rent to ${opponentNum}!`);
+                    this.updateInfo();
+                    this.checkBankruptcy(playerName);
+                    return;
+                }
+
+                if (prop.owner === null) {
+                    if (player.money < prop.price) {
+                        this.logMessage(`${playerNum} cannot afford ${prop.name}`);
+                        alert(`Cannot Afford! ${playerNum} cannot afford ${prop.name}! Need R${prop.price - player.money} more.`);
+                        return;
+                    }
+
+                    const response = confirm(`${playerNum}: Buy ${prop.name}?\nPrice: R${prop.price}\nRent: R${prop.rent}`);
+                    if (response) {
+                        player.money -= prop.price;
+                        prop.owner = playerName;
+                        this.logMessage(`${playerNum} bought ${prop.name} for R${prop.price}`);
+                        alert(`Property Purchased! ${playerNum} bought ${prop.name} for R${prop.price}!`);
+                        this.drawBoard();
+                        this.updateInfo();
+                        this.checkBankruptcy(playerName);
+                    } else {
+                        this.logMessage(`${playerNum} declined to buy ${prop.name}`);
+                        alert(`${playerNum} declined to buy ${prop.name}.`);
+                    }
+                }
+            }
+
+            checkBankruptcy(playerName) {
+                const player = this.players[playerName];
+
+                if (player.money < 0) {
+                    this.gameOver = true;
+                    const playerNum = playerName === 'player1' ? "Player 1" : "Player 2";
+                    const winner = playerName === 'player1' ? "Player 2" : "Player 1";
+                    this.logMessage(`GAME OVER! ${playerNum} is bankrupt!`);
+                    this.logMessage(`${winner} WINS!`);
+                    alert(`Game Over: ${playerNum} is bankrupt!\n${winner} WINS!`);
+                    this.updateInfo();
+                }
+            }
+        }
+
+        window.onload = () => {
+            new MonopolyGame();
+        };
+    </script>
+</body>
+</html>
